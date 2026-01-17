@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spotify Music Discovery</title>
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+
+    <img src="spotifylogo.png" alt="Spotify Logo" id="logo">
+
+    <h1 class="hero-title">Discover Your Music</h1>
+    <p class="hero-subtitle">Search songs, artists or explore genres</p>
+
+    <input
+        type="text"
+        id="searchBar"
+        placeholder="Search songs or artists..."
+        autocomplete="off"
+    >
+
+    <div class="nav-bar">
+        <button id="backBtn">
+            <i class="fas fa-chevron-left"></i> Back
+        </button>
+    </div>
+
+    <div id="songs" class="results"></div>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
