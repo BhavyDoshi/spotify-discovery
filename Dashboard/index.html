@@ -4,36 +4,43 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Spotify Music Discovery</title>
-
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-<div class="container">
-
-    <img src="spotifylogo.png" alt="Spotify Logo" id="logo">
-
-    <h1 class="hero-title">Discover Your Music</h1>
-    <p class="hero-subtitle">Search songs, artists or explore genres</p>
-
-    <input
-        type="text"
-        id="searchBar"
-        placeholder="Search songs or artists..."
-        autocomplete="off"
-    >
-
-    <div class="nav-bar">
-        <button id="backBtn">
-            <i class="fas fa-chevron-left"></i> Back
-        </button>
+    <div id="loader" class="hidden">
+        <div class="spinner"></div>
+        <p>Searching Spotify Data...</p>
     </div>
 
-    <div id="songs" class="results"></div>
+    <div class="container">
+        <header>
+            <img src="spotifylogo.png" alt="Spotify Logo" class="logo">
+            <h1>Spotify Music Discovery</h1>
+        </header>
 
-</div>
+        <section class="search-section">
+            <input type="text" id="searchInput" placeholder="Search by song or artist...">
+            <button onclick="searchSongs()">Search</button>
+        </section>
 
-<script src="script.js"></script>
+        <section class="filter-section">
+            <div class="filter-group">
+                <label>Genre:</label>
+                <select id="genreSelect" onchange="filterData('playlist_genre', this.value)">
+                    <option value="">Select Genre</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Subgenre:</label>
+                <select id="subgenreSelect" onchange="filterData('playlist_subgenre', this.value)">
+                    <option value="">Select Subgenre</option>
+                </select>
+            </div>
+        </section>
+
+        <div id="results" class="results-grid"></div>
+    </div>
+
+    <script src="script.js"></script>
 </body>
 </html>
