@@ -1,106 +1,81 @@
-let debounceTimer;
+const loader = document.getElementById('loader');
+const resultsDiv = document.getElementById('results');
 
-const searchBar = document.getElementById("searchBar");
-const backBtn = document.getElementById("backBtn");
-const container = document.getElementById("songs");
+// Load categories on startup
+window.onload = async () => {
+    try {
+        const res = await fetch('/categories');
+        const data = await res.json();
+        fillDropdown('genreSelect', data.genres);
+        fillDropdown('subgenreSelect', data.subgenres);
+    } catch (e) { console.error("Load failed", e); }
+};
 
-function toggleNav(show) {
-    backBtn.style.display = show ? "inline-block" : "none";
-}
-
-function highlight(text, query) {
-    if (!query) return text;
-    const regex = new RegExp(`(${query})`, "gi");
-    return text.replace(regex, "<span style='color:#1ed760'>$1</span>");
-}
-
-function displaySongs(songs, query = "") {
-    container.innerHTML = "";
-
-    songs.forEach(song => {
-        const card = document.createElement("div");
-        card.className = "song-card";
-
-        card.innerHTML = `
-            <h3>${highlight(song.track_name, query)}</h3>
-            <p>${highlight(song.track_artist, query)}</p>
-            <p class="genre-tag">${song.playlist_genre} • ${song.playlist_subgenre}</p>
-            <div class="song-meta">
-                <span><i class="fas fa-clock"></i> ${song.duration_min} min</span>
-                <span><i class="fas fa-star"></i> ${song.track_popularity}</span>
-            </div>
-        `;
-
-        container.appendChild(card);
+function fillDropdown(id, items) {
+    const select = document.getElementById(id);
+    items.forEach(item => {
+        let opt = document.createElement('option');
+        opt.value = item;
+        opt.innerHTML = item;
+        select.appendChild(opt);
     });
 }
 
-async function loadCategories() {
-    toggleNav(false);
+// Search Function
+async function searchSongs() {
+    const query = document.getElementById('searchInput').value;
+    if (!query) return;
 
-    const res = await fetch("/categories");
-    const data = await res.json();
-
-    let html = `
-        <h3>Genres</h3>
-        <div class="category-list">
-    `;
-
-    data.genres.forEach(g => {
-        html += `<div class="genre-pill" onclick="filterByCategory('playlist_genre','${g}')">${g}</div>`;
-    });
-
-    html += `
-        </div>
-        <h3>Subgenres</h3>
-        <div class="category-list">
-    `;
-
-    data.subgenres.forEach(s => {
-        html += `<div class="genre-pill" onclick="filterByCategory('playlist_subgenre','${s}')">${s}</div>`;
-    });
-
-    html += `</div>`;
-    container.innerHTML = html;
+    showLoader(true);
+    try {
+        const response = await fetch(`/songs?query=${encodeURIComponent(query)}`);
+        const data = await response.json();
+        displayResults(data);
+    } catch (error) {
+        resultsDiv.innerHTML = "<p>Error loading data.</p>";
+    } finally {
+        showLoader(false);
+    }
 }
 
-async function filterByCategory(type, value) {
-    toggleNav(true);
-
-    const res = await fetch(`/filter?type=${type}&value=${encodeURIComponent(value)}`);
-    const data = await res.json();
-
-    displaySongs(data);
+// Filter Function
+async function filterData(type, value) {
+    if (!value) return;
+    showLoader(true);
+    try {
+        const response = await fetch(`/filter?type=${type}&value=${encodeURIComponent(value)}`);
+        const data = await response.json();
+        displayResults(data);
+    } catch (error) {
+        resultsDiv.innerHTML = "<p>Error filtering data.</p>";
+    } finally {
+        showLoader(false);
+    }
 }
 
-searchBar.addEventListener("input", e => {
-    const query = e.target.value.trim();
-    clearTimeout(debounceTimer);
+function showLoader(isVisible) {
+    if (isVisible) loader.classList.remove('hidden');
+    else loader.classList.add('hidden');
+}
 
-    if (query === "") {
-        loadCategories();
+function displayResults(songs) {
+    resultsDiv.innerHTML = "";
+    if (songs.length === 0) {
+        resultsDiv.innerHTML = "<p>No matches found.</p>";
         return;
     }
 
-    debounceTimer = setTimeout(async () => {
-        const res = await fetch(`/songs?query=${query}`);
-        const data = await res.json();
-
-        // 🔥 OLD RELIABLE BEHAVIOR
-        if (data.length === 0) {
-            loadCategories();
-            toggleNav(false);
-            return;
-        }
-
-        toggleNav(true);
-        displaySongs(data, query);
-    }, 300);
-});
-
-backBtn.addEventListener("click", () => {
-    searchBar.value = "";
-    loadCategories();
-});
-
-loadCategories();
+    songs.forEach(song => {
+        const card = document.createElement('div');
+        card.className = 'song-card';
+        card.innerHTML = `
+            <h3>${song.track_name}</h3>
+            <p style="color: #b3b3b3;">${song.track_artist}</p>
+            <div style="font-size: 0.8em; margin-top: 10px;">
+                <span>Popularity: ${song.track_popularity}</span><br>
+                <span>Album: ${song.track_album_name}</span>
+            </div>
+        `;
+        resultsDiv.appendChild(card);
+    });
+}
